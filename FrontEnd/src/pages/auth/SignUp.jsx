@@ -1,25 +1,31 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import AuthLayout from "../../components/layout/AuthLayout"
 import { Link, useNavigate } from 'react-router-dom'
 import Input from '../../components/Inputs/Input'
 import { validateEmail } from '../../utils/helper'
 import ProfilePhotoSelector from '../../components/Inputs/ProfilePhotoSelector'
+import axiosInstance from '../../utils/axiosInstance'
+import { API_PATHS } from '../../utils/apiPaths'
+import {UserContext} from "../../context/UserContext"
+import uploadImage from '../../utils/uploadImage'
 
 
 const SignUp = () =>{
-    const [profilPic,setProfilePic] = useState(null);
+    const [profilePic,setProfilePic] = useState(null);
     const [fullName,setFullName] = useState("");
     const [email,setEmail] = useState("")
     const [password,setPassword] = useState("");
 
     const [error,setError] = useState(null)
 
-    const nevigate = useNavigate();
+    const {updateUser} = useContext(UserContext)
 
-    const handleSignUp = (e) => {
+    const navigate = useNavigate();
+
+    const handleSignUp = async (e) => {
         e.preventDefault();
 
-        let profilImageUrl = "";
+        let profileImageUrl = "";
         if(!fullName){
             setError("enter your full name.")
             return
@@ -36,6 +42,35 @@ const SignUp = () =>{
         }
         
         setError("")
+
+        try{
+            if(profilePic){
+                const imgUploadRes = await uploadImage(profilePic);
+                profileImageUrl =  imgUploadRes.imageUrl || "";
+            }
+
+            const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER,{
+                fullName,
+                email,
+                password,
+                profileImageUrl
+            });
+            const {token, user} = response.data;
+
+            if(token){
+                localStorage.setItem("token", token);
+                updateUser(user)
+                navigate("/dashboard");
+            }
+        }catch(err){
+            console.error("Signup Error:", err.response?.data || err.message || err);
+            if(err.response && err.response.data.message){
+            setError(err.response.data.message);
+            }
+            else{
+            setError("Something went wrong. please try again.")
+            }
+        }
     }
 
 
@@ -47,7 +82,7 @@ const SignUp = () =>{
           
             <form onSubmit={handleSignUp}>
                  
-                <ProfilePhotoSelector image={profilPic} setImage={setProfilePic}/>
+                <ProfilePhotoSelector image={profilePic} setImage={setProfilePic}/>
 
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     <Input 
