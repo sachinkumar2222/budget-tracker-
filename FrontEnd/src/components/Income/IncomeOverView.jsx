@@ -3,15 +3,15 @@ import { prepareIncomeBarChartData } from "../../utils/helper";
 import { LuPlus } from "react-icons/lu";
 import CustomBarChart from "../Charts/CustomBarChart";
 
-const IncomeOverView = ({ trancations, onAddIncome }) => {
+const IncomeOverView = ({ transactions, onAddIncome }) => {
   const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
-    const result = prepareIncomeBarChartData(trancations);
+    const result = prepareIncomeBarChartData(transactions);
     setChartData(result);
 
     return () => {};
-  }, [trancations]);
+  }, [transactions]);
 
   return (
     <div className="card">

@@ -30,4 +30,4 @@ app.use("/uploads",express.static(path.join(__dirname,"uploads")));
 connectDb();
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, ()=> console.log(`server running on ${PORT}`));
+app.listen(PORT,'0.0.0.0', ()=> console.log(`server running on ${PORT}`));

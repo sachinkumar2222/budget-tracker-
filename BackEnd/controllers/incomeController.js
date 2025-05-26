@@ -1,6 +1,8 @@
 const User = require("../models/User")
 const Income = require("../models/Income")
-const xlsx = require("xlsx")
+const ExcelJS = require('exceljs');
+const fs = require('fs');
+const path = require('path');
 
 exports.addIncome = async (req,res) => {
     const userId = req.user.id;
@@ -46,23 +48,46 @@ exports.deleteIncome = async (req,res) => {
     }
 }
 
-exports.downloadIncomeExcel = async (req,res) => {
-    const userId = req.user.id;
-    try{
-        const income = await Income.find({userId}).sort({date: -1});
+exports.downloadIncomeExcel = async (req, res) => {
+  const userId = req.user.id;
 
-        const data = income.map((item)=>({
-            source: item.source,
-            Amount: item.amount,
-            Date: item.date
-        }));
+  try {
+    const income = await Income.find({ userId }).sort({ date: -1 });
 
-        const wb = xlsx.utils.book_new();
-        const ws = xlsx.utils.json_to_sheet(data);
-        xlsx.utils.book_append_sheet(wb,ws,"Income");
-        xlsx.writeFile(wb,"income_details.xlsx");
-        res.download("incom_details.xlsx");
-    }catch(err){
-         return res.status(500).json({message : "server Error"});
-    }
-}
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Income');
+
+    // Add header row
+    worksheet.columns = [
+      { header: 'Source', key: 'source', width: 25 },
+      { header: 'Amount', key: 'amount', width: 15 },
+      { header: 'Date', key: 'date', width: 20 },
+    ];
+
+    // Add data rows
+    income.forEach(item => {
+      worksheet.addRow({
+        source: item.source,
+        amount: item.amount,
+        date: item.date,
+      });
+    });
+
+    const filePath = path.join(__dirname, '..', 'income_details.xlsx');
+
+    await workbook.xlsx.writeFile(filePath);
+
+    res.download(filePath, 'income_details.xlsx', err => {
+      if (err) {
+        return res.status(500).json({ message: 'Error downloading file' });
+      }
+
+      // Optional: clean up file after download
+      fs.unlink(filePath, () => {});
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server Error' });
+  }
+};

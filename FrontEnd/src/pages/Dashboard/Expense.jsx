@@ -7,6 +7,8 @@ import { API_PATHS } from '../../utils/apiPaths';
 import axiosInstance from '../../utils/axiosInstance';
 import ExpenseOverview from '../../components/Expense/ExpenseOverview';
 import AddExpenseForm from '../../components/Expense/AddExpenseForm';
+import ExpenseList from '../../components/Expense/ExpenseList';
+import DeleteAlert from '../../components/DeleteAlert';
 
 const Expense = () => {
   useUserAuth();
@@ -65,11 +67,44 @@ const Expense = () => {
         icon,
       });
       toast.success("Expense added successfully!");
-      fetchIncomeDetails(); 
+      fetchExpenseDetails();
       setOpenAddExpenseModel(false); 
     } catch (err) {
       console.error("Error adding expense", err);
       toast.error("Failed to add expense. Try again.");
+    }
+  };
+
+  const deleteExpense = async (id) => {
+    try{
+      await axiosInstance.delete(API_PATHS.EXPENSE.DELETE_EXPENSE(id));
+
+      setOpenDeleteAlert({show: false, data: null})
+      toast.success("expense details deleted successfully");
+      fetchExpenseDetails();
+    }catch(err){
+      console.log("error deleting expense",err);
+    }
+  };
+
+  
+  const handleDownloadExpenseDetails = async () => {
+    try{
+      const response = await axiosInstance.get(API_PATHS.EXPENSE.DOWNLOAD_EXPENSE,{
+        responseType: "blob"
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download","expense_details.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    }catch(error){
+      console.log("error downloading expense details ",error);
+      toast.error("Failed to Download expense details. please try again");
     }
   };
 
@@ -85,11 +120,19 @@ const Expense = () => {
         <div className="grid grid-cols-1 gap-6">
           <div className="">
             <ExpenseOverview
-              trancations={expenseData}
+              transactions={expenseData}
               onAddExpense={() => setOpenAddExpenseModel(true)}
             />  
           </div>
         </div>
+
+        <ExpenseList
+          transactions={expenseData}
+          onDelete={(id)=>{
+            setOpenDeleteAlert({show: true , data: id})
+          }}
+          onDownload= {handleDownloadExpenseDetails}
+        />
 
         <Model
          isOpen={openAddExpenseModel}
@@ -97,6 +140,17 @@ const Expense = () => {
          title="Add Expense"
         >
           <AddExpenseForm onAddExpense={handleAddExpense}/>
+        </Model>
+
+        <Model
+         isOpen={openDeletAlert.show}
+         onClose={()=> setOpenDeleteAlert({show : false, data:null})}
+         title="delete Expense"
+        >
+          <DeleteAlert
+           content = "Are you sure you want to delete this expense details."
+           onDelete = {() => deleteExpense(openDeletAlert.data)}
+          />
         </Model>
       </div>
     </DashboardLayout>

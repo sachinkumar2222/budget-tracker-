@@ -3,15 +3,14 @@ import { prepareExpeseLineChartData } from "../../utils/helper";
 import { LuPlus } from "react-icons/lu";
 import CustomLineChart from "../Charts/CustomLineChart";
 
-const ExpenseOverview = ({ trancations, onAddExpense }) => {
+const ExpenseOverview = ({ transactions, onAddExpense }) => {
   const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
-    console.log("exp2",trancations);
-    const result = prepareExpeseLineChartData(trancations);
+    const result = prepareExpeseLineChartData(transactions);
     setChartData(result);
 
-  }, [trancations]);
+  }, [transactions]);
   return (
     <div className="card">
       <div className="flex items-center justify-between">

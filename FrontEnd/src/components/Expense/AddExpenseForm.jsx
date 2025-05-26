@@ -31,9 +31,9 @@ const AddExpenseForm = ({ onAddExpense }) => {
         value={expense.category}
         onChange={({ target }) => handleChange("category", target.value)}
         label="Expense category"
-        placeholder="Freelance, salary, etc"
+        placeholder="Rent,Groceries etc"
         type="text"
-      />
+      /> 
 
   
       <Input

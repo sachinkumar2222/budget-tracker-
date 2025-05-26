@@ -1,6 +1,8 @@
 const User = require("../models/User")
 const Expense = require("../models/Expense")
-const xlsx = require("xlsx")
+const ExcelJS = require('exceljs');
+const fs = require('fs');
+const path = require('path');
 
 exports.addExpense = async (req,res) => {
     const userId = req.user.id;
@@ -46,23 +48,46 @@ exports.deleteExpense = async (req,res) => {
     }
 }
 
-exports.downloadExpenseExcel = async (req,res) => {
-    const userId = req.user.id;
-    try{
-        const Expense = await Expense.find({userId}).sort({date: -1});
+exports.downloadExpenseExcel = async (req, res) => {
+  const userId = req.user.id;
 
-        const data = Expense.map((item)=>({
-            category: item.category,
-            Amount: item.amount,
-            Date: item.date
-        }));
+  try {
+    const expense = await Expense.find({ userId }).sort({ date: -1 });
 
-        const wb = xlsx.utils.book_new();
-        const ws = xlsx.utils.json_to_sheet(data);
-        xlsx.utils.book_append_sheet(wb,ws,"Expense");
-        xlsx.writeFile(wb,"Expense_details.xlsx");
-        res.download("incom_details.xlsx");
-    }catch(err){
-         return res.status(500).json({message : "server Error"});
-    }
-}
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Expense');
+
+    // Add header row
+    worksheet.columns = [
+      { header: 'Category', key: 'category', width: 20 },
+      { header: 'Amount', key: 'amount', width: 15 },
+      { header: 'Date', key: 'date', width: 20 },
+    ];
+
+    // Add data rows
+    expense.forEach(item => {
+      worksheet.addRow({
+        category: item.category,
+        amount: item.amount,
+        date: item.date,
+      });
+    });
+
+    const filePath = path.join(__dirname, '..', 'expense_details.xlsx');
+
+    await workbook.xlsx.writeFile(filePath);
+
+    res.download(filePath, 'expense_details.xlsx', err => {
+      if (err) {
+        return res.status(500).json({ message: 'Error downloading file' });
+      }
+
+      // Optional: delete file after download
+      fs.unlink(filePath, () => {});
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server Error' });
+  }
+};
