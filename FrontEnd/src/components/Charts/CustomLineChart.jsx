@@ -3,7 +3,7 @@ import {XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Area, AreaCha
 
 const CustomLineChart = ({data}) => {
 
-    const CustomTooltip = ({active,payload}) => {
+    const CustomToolTip = ({active,payload}) => {
     if(active && payload && payload.length){
         return (
            <div className='bg-white shadow-md rounded-lg p-2 border border-gray-300'>
@@ -30,7 +30,7 @@ const CustomLineChart = ({data}) => {
           <CartesianGrid stroke='none'/>
           <XAxis dataKey="month" tick={{fontSize: 12,fill: "#555"}} stroke='none'/>
           <YAxis tick={{fontSize: 12,fill: "#555"}} stroke='none'/>
-          <Tooltip content={<CustomTooltip/>}/>
+          <Tooltip content={<CustomToolTip/>}/>
 
           <Area type="monotone" dataKey="amount" stroke='#875cf5' fill='url(#incomeGradient)' strokeWidth={3} dot={{r: 3,fill: "#ab8df8"}}/>
 
