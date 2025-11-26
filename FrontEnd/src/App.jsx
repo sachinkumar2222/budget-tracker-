@@ -11,6 +11,7 @@ import SignUp from "./pages/auth/SignUp"
 import Home from "./pages/Dashboard/Home"
 import Income from "./pages/Dashboard/Income"
 import Expense from "./pages/Dashboard/Expense"
+import Profile from "./pages/Dashboard/Profile" // ▼▼▼ IMPORT THIS ▼▼▼
 import UserProvider from './context/UserContext'
 import {Toaster} from "react-hot-toast" 
 import EmailVerificationPage from "./pages/auth/EmailVerificationPage"
@@ -27,13 +28,14 @@ const App = () => {
           <Route path='/dashboard' exact element={<Home />} />
           <Route path='/income' exact element={<Income />} />
           <Route path='/expense' exact element={<Expense />} />
+          <Route path='/profile' exact element={<Profile />} /> {/* ▼▼▼ ADD THIS ROUTE ▼▼▼ */}
           <Route path="/verify/:token" element={<EmailVerificationPage />} />
         </Routes>
       </Router>
     </div>
 
     <Toaster 
-      toastOption={{
+      toastOptions={{
         className:"",
         style:{
           fontSize:'13px'

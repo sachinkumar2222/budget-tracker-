@@ -1,37 +1,41 @@
-import { useContext, useEffect } from "react"
-import { UserContext } from "../context/UserContext"
+import { useContext, useEffect } from "react";
+import { UserContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../utils/axiosInstance"
+import axiosInstance from "../utils/axiosInstance";
 import { API_PATHS } from "../utils/apiPaths";
 
 export const useUserAuth = () => {
-    const {user,updateUser,cleanUser} = useContext(UserContext);
+    // FIX 1: Changed 'cleanUser' to 'clearUser' to match your UserProvider
+    const { user, updateUser, clearUser } = useContext(UserContext);
     const navigate = useNavigate();
 
-    useEffect(()=>{
-        if(user) return;
+    useEffect(() => {
+        if (user) return;
 
-        let isMounted =true;
-        
+        let isMounted = true;
+
         const fetchUserInfo = async () => {
-            try{
-            const respnse = await axiosInstance.get(API_PATHS.AUTH.GET_USER_INFO);
-            if(isMounted && respnse.data){
-                updateUser(respnse.data);
-            }
-            }catch(error){
-                console.log("failed to fetch user info:",error);
-                if(isMounted){
-                    cleanUser();
+            try {
+                const response = await axiosInstance.get(API_PATHS.AUTH.GET_USER_INFO);
+                if (isMounted && response.data) {
+                    updateUser(response.data);
+                }
+            } catch (error) {
+                console.log("failed to fetch user info:", error);
+                if (isMounted) {
+                    clearUser(); // FIX 1: Updated name
                     navigate("/login");
                 }
             }
-        }
+        };
 
         fetchUserInfo();
 
-        return () =>{
+        return () => {
             isMounted = false;
-        }
-    },[updateUser,cleanUser,navigate]);
+        };
+    }, [updateUser, clearUser, navigate]); // FIX 1: Updated dependency
+
+    // ▼▼▼ FIX 2: THIS RETURN STATEMENT WAS MISSING ▼▼▼
+    return { user, updateUser, clearUser };
 };

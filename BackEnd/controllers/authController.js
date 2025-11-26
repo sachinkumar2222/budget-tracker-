@@ -85,3 +85,5 @@ exports.getUserInfo = async (req, res) => {
       .json({ message: "error getting info user", error: err.message });
   }
 };
+
+

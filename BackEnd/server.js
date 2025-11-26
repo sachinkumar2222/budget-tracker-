@@ -3,10 +3,12 @@ const express = require("express");
 const cors = require('cors');
 const path = require('path');
 const connectDb = require("./config/db");
-const authRoutes =require("./routes/authRoutes")
-const incomeRoutes = require("./routes/incomeRoutes")
-const expenseRoutes = require("./routes/expenseRoutes")
-const dashboardRoutes = require("./routes/dashboardRoutes")
+
+const authRoutes = require("./routes/authRoutes");
+const incomeRoutes = require("./routes/incomeRoutes");
+const expenseRoutes = require("./routes/expenseRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 
 const app = express();  
 
@@ -20,14 +22,16 @@ app.use(
 
 app.use(express.json());
 
-app.use("/api/v1/auth",authRoutes);
-app.use("/api/v1/income",incomeRoutes);
-app.use("/api/v1/expense",expenseRoutes);
-app.use("/api/v1/dashboard",dashboardRoutes);
+// Routes
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/profile", profileRoutes);
+app.use("/api/v1/income", incomeRoutes);
+app.use("/api/v1/expense", expenseRoutes);
+app.use("/api/v1/dashboard", dashboardRoutes);
 
-app.use("/uploads",express.static(path.join(__dirname,"uploads")));
+app.use("/uploads", express.static(path.join(__dirname,"uploads")));
 
 connectDb();
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT,'0.0.0.0', ()=> console.log(`server running on ${PORT}`));
+app.listen(PORT, '0.0.0.0', ()=> console.log(`server running on ${PORT}`));
