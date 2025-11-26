@@ -1,14 +1,17 @@
+// controllers/authController.js
+
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const {validatePassword} = require("../utils/helper")
+const { validatePassword } = require("../utils/helper");
+const uploadToCloudinary = require("../utils/cloudinary"); // ✅ NEW
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 };
 
 exports.registerUser = async (req, res) => {
-  const { fullName, email, password, profileImageUrl } = req.body;
-
+  const { fullName, email, password, profileImageUrl, profileImage } = req.body;
+  // profileImage = base64 image (optional)
 
   if (!fullName || !email || !password) {
     return res.status(400).json({ message: "All fields are Require" });
@@ -27,11 +30,19 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: "Email already in use" });
     }
 
+    // ✅ Decide final image URL
+    let finalProfileImageUrl = profileImageUrl || null;
+
+    if (profileImage) {
+      const uploadRes = await uploadToCloudinary(profileImage);
+      finalProfileImageUrl = uploadRes.url;
+    }
+
     const user = await User.create({
       fullName,
       email,
       password,
-      profileImageUrl,
+      profileImageUrl: finalProfileImageUrl,
     });
 
     res.status(201).json({
@@ -40,6 +51,7 @@ exports.registerUser = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (err) {
+    console.error("Register error:", err);
     return res
       .status(500)
       .json({ message: "error registering user", error: err.message });
@@ -65,6 +77,7 @@ exports.loginUser = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (err) {
+    console.error("Login error:", err);
     return res
       .status(500)
       .json({ message: "error login user", error: err.message });
@@ -80,10 +93,10 @@ exports.getUserInfo = async (req, res) => {
 
     return res.status(200).json(user);
   } catch (err) {
-    return res
-      .status(500)
-      .json({ message: "error getting info user", error: err.message });
+    console.error("Get user info error:", err);
+    return res.status(500).json({
+      message: "error getting info user",
+      error: err.message,
+    });
   }
 };
-
-
