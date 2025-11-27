@@ -1,27 +1,22 @@
+// utils/cloudinary.js
 const cloudinary = require("cloudinary").v2;
-require("dotenv").config();
 
-// Configure Cloudinary
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  api_secret: process.env.CLOUDINARY_SECRET_KEY,
 });
 
-// Function to upload image to Cloudinary
-const uploadToCloudinary = async (file) => {
+const uploadToCloudinary = async (image) => {
   try {
-    const result = await cloudinary.uploader.upload(file, {
-      folder: "budget-tracker_uploads",
+    // "image" should be a base64 string or an image URL
+    const result = await cloudinary.uploader.upload(image, {
+      folder: "budgetTracker/profile", // optional folder
     });
-
-    return {
-      url: result.secure_url,
-      public_id: result.public_id,
-    };
-  } catch (error) {
-    console.error("Cloudinary Upload Error:", error);
-    throw error;
+    return result;
+  } catch (err) {
+    console.error("Cloudinary error in uploadToCloudinary:", err);
+    throw err;
   }
 };
 

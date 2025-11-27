@@ -57,17 +57,30 @@ const Profile = () => {
       const base64Image = reader.result; // "data:image/png;base64,..."
 
       try {
-        const response = await axiosInstance.post(
+        // 1. Upload Image to Cloudinary
+        const uploadResponse = await axiosInstance.post(
           API_PATHS.IMAGE.UPLOAD_IMAGE,
-          { image: base64Image } // backend: const { image } = req.body;
+          { image: base64Image }
         );
 
-        if (response.data && response.data.imageUrl) {
-          setProfileData((prev) => ({
-            ...prev,
-            profileImageUrl: response.data.imageUrl,
-          }));
-          toast.success("Image uploaded successfully");
+        if (uploadResponse.data && uploadResponse.data.imageUrl) {
+          const imageUrl = uploadResponse.data.imageUrl;
+
+          // 2. Update User Profile with new Image URL
+          const updateResponse = await axiosInstance.put(
+            API_PATHS.PROFILE.UPDATE_PROFILE,
+            { profileImageUrl: imageUrl }
+          );
+
+          if (updateResponse.data) {
+            // 3. Update State & Context
+            setProfileData((prev) => ({
+              ...prev,
+              profileImageUrl: imageUrl,
+            }));
+            updateUser(updateResponse.data);
+            toast.success("Profile image updated successfully");
+          }
         } else {
           toast.error("Image upload failed: no URL returned");
         }

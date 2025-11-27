@@ -10,6 +10,7 @@ exports.updateUserProfile = async (req, res) => {
     const userId = req.user.id; // Comes from 'protect' middleware
     const { fullName, phoneNumber, address, profileImageUrl, profileImage } =
       req.body;
+
     // profileImage = base64 string (optional)
 
     // Find user
